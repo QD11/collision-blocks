@@ -34,3 +34,7 @@ export const BOX_PROPERTIES: BoxProperty[] = [
         name: "width",
     },
 ];
+
+export const SVG_PADDING = 20;
+
+export const BOX_HEIGHT = 20;

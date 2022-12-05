@@ -1,7 +1,11 @@
-import { axisBottom, select, Selection } from "d3";
+import { axisBottom, ScaleLinear, select, Selection } from "d3";
 import { scaleLinear } from "d3-scale";
-import { defaultBoxSetting, defaultEnvSettings } from "features/constants";
-import { css, html, LitElement } from "lit";
+import {
+    defaultBoxSetting,
+    defaultEnvSettings,
+    SVG_PADDING,
+} from "features/constants";
+import { css, html, LitElement, PropertyValueMap } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 
 @customElement("display-svg")
@@ -21,35 +25,71 @@ export class DisplaySvg extends LitElement {
     @state()
     svgHeight = 0;
 
-    // willUpdate(changedProperties: PropertyValues<this>) {
-    //     const xScale = scaleLinear()
-    //         .domain([0, this.boxSetting.distance])
-    //         .range([0, 100]);
-    // }
+    @property()
+    svgg = select(this.svg);
 
     protected updated() {
         const shadowRoot = this.shadowRoot;
         if (!shadowRoot) {
             return;
         }
-
-        let svg = select(shadowRoot.querySelector("#svg"));
+        const svg = select(this.svg);
+        const xScale = scaleLinear()
+            .domain([
+                -this.boxSetting.width,
+                2 * this.boxSetting.distance + this.boxSetting.width,
+            ])
+            .range([0, this.svgWidth - 2 * SVG_PADDING]);
         svg.selectAll("*").remove();
-        this.buildChart(svg, shadowRoot);
+        this.buildChart(svg, xScale);
+        this.renderBlocks(svg, xScale);
     }
 
     buildChart(
-        svg: Selection<Element | null, unknown, null, undefined>,
-        shadowRoot: ShadowRoot
+        svg: Selection<SVGElement, unknown, null, undefined>,
+        xScale: ScaleLinear<number, number, never>
     ) {
-        const svgWidth = svg.node()?.clientWidth ?? 0;
-
-        const xScale = scaleLinear()
-            .domain([0, this.boxSetting.distance])
-            .range([0, svgWidth]);
-
         const xAxis = axisBottom(xScale).ticks(5);
-        svg.append("g").call(xAxis);
+        svg.append("g")
+            .attr(
+                "transform",
+                `translate(${SVG_PADDING}, ${this.svgHeight - SVG_PADDING})`
+            )
+            .call(xAxis);
+    }
+
+    renderBlocks(
+        svg: Selection<SVGElement, unknown, null, undefined>,
+        xScale: ScaleLinear<number, number, never>
+    ) {
+        const blockG = svg
+            .append("g")
+            .attr(
+                "transform",
+                `translate(${SVG_PADDING}, ${
+                    this.svgHeight -
+                    SVG_PADDING -
+                    (xScale(this.boxSetting.width) - xScale(0))
+                })`
+            );
+
+        blockG
+            .append("rect")
+            .attr("width", xScale(this.boxSetting.width) - xScale(0))
+            .attr("height", xScale(this.boxSetting.width) - xScale(0))
+            .attr("x", 0)
+            .attr("fill", "red");
+
+        blockG
+            .append("rect")
+            .attr("width", xScale(this.boxSetting.width) - xScale(0))
+            .attr("height", xScale(this.boxSetting.width) - xScale(0))
+            .attr("x", xScale(this.boxSetting.distance * 2))
+            .attr("fill", "blue");
+    }
+
+    render() {
+        return html` <svg id="svg" width="100%" height="100%"></svg> `;
     }
 
     connectedCallback() {
@@ -61,29 +101,24 @@ export class DisplaySvg extends LitElement {
         super.disconnectedCallback();
     }
 
+    protected async firstUpdated(
+        _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+    ) {
+        // The dom will showup but it's not initialized
+        // setTimeout() waits for the dom to be initialized first
+        // TODO: Find a better way to wait
+        setTimeout(() => this._handleResize());
+    }
+
     _handleResize = () => {
         this.svgWidth = this.svg.clientWidth;
         this.svgHeight = this.svg.clientHeight;
     };
 
-    render() {
-        return html`
-            <svg
-                id="svg"
-                width="100%"
-                height="100%"
-                preserveAspectRatio="xMinYMin meet"
-            >
-                <!-- <text font-size="24px" dominant-baseline="hanging">
-                    ${this.boxSetting.distance}
-                </text> -->
-            </svg>
-        `;
-    }
-
     static styles = css`
         :host {
             height: 100%;
+            width: 100%;
             border: 2px solid black;
         }
     `;
