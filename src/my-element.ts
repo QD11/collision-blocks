@@ -41,8 +41,7 @@ export class MyElement extends LitElement {
     render() {
         return html`
             <div class="container">
-                <p>${this.envSettings.distance}</p>
-                <p>${this.count}</p>
+                <h2>Physics Blocks</h2>
                 <display-svg
                     .envSettings=${this.envSettings}
                     .boxSetting=${this.boxSetting}
