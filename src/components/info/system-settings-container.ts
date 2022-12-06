@@ -78,7 +78,7 @@ export class SystemSettingsContainer extends LitElement {
         :host {
             padding: 1rem;
             width: 50%;
-            height: 50vh;
+            height: 100%;
             border: 1px solid black;
         }
         .bottom-container {
