@@ -208,7 +208,7 @@ export class DisplaySvg extends LitElement {
 
         textMiddleG
             .append("text")
-            .text(`time_collision: ${infoOnCollision.time} (s)`)
+            .text(`time_collision: ${infoOnCollision.time.toFixed(2)} (s)`)
             .attr("text-anchor", "middle")
             .attr("font-size", "1.5rem")
             .attr("x", 0)
@@ -216,7 +216,7 @@ export class DisplaySvg extends LitElement {
 
         textMiddleG
             .append("text")
-            .text(`x_collision: ${infoOnCollision.x} (m)`)
+            .text(`x_collision: ${infoOnCollision.x.toFixed(2)} (m)`)
             .attr("text-anchor", "middle")
             .attr("font-size", "1.5rem")
             .attr("x", 0)
