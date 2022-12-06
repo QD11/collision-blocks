@@ -1,10 +1,13 @@
-import { axisBottom, ScaleLinear, select, Selection } from "d3";
+import { axisBottom, easeLinear, ScaleLinear, select, Selection } from "d3";
 import { scaleLinear } from "d3-scale";
 import {
     defaultBoxSetting,
     defaultEnvSettings,
+    DEFAULT_STATS,
     SVG_PADDING,
 } from "features/constants";
+import { InfoCollision } from "features/interfaces";
+import { getInfoOnCollision } from "features/utils";
 import { css, html, LitElement, PropertyValueMap } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 
@@ -17,7 +20,10 @@ export class DisplaySvg extends LitElement {
     envSettings = defaultEnvSettings;
 
     @property()
-    boxSetting = defaultBoxSetting;
+    leftBox = defaultBoxSetting;
+
+    @property()
+    rightBox = defaultBoxSetting;
 
     @state()
     svgWidth = 0;
@@ -26,9 +32,33 @@ export class DisplaySvg extends LitElement {
     svgHeight = 0;
 
     @property()
-    svgg = select(this.svg);
+    runSimulation = false;
 
-    protected updated() {
+    @property()
+    stats = DEFAULT_STATS;
+
+    willUpdate(
+        changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+    ): void {
+        if (changedProperties.has("runSimulation")) {
+            const event = new CustomEvent("new-runSimulation", {
+                bubbles: true,
+                detail: this.runSimulation,
+            });
+            this.dispatchEvent(event);
+        }
+        if (changedProperties.has("stats")) {
+            const event = new CustomEvent("new-stats", {
+                bubbles: true,
+                detail: this.stats,
+            });
+            this.dispatchEvent(event);
+        }
+    }
+
+    protected updated(
+        changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+    ) {
         const shadowRoot = this.shadowRoot;
         if (!shadowRoot) {
             return;
@@ -36,11 +66,15 @@ export class DisplaySvg extends LitElement {
         const svg = select(this.svg);
         const xScale = scaleLinear()
             .domain([
-                -this.boxSetting.width,
-                2 * this.boxSetting.distance + this.boxSetting.width,
+                -this.leftBox.width,
+                this.leftBox.distance +
+                    this.rightBox.distance +
+                    this.rightBox.width,
             ])
             .range([0, this.svgWidth - 2 * SVG_PADDING]);
+
         svg.selectAll("*").remove();
+
         this.buildChart(svg, xScale);
         this.renderBlocks(svg, xScale);
     }
@@ -62,30 +96,13 @@ export class DisplaySvg extends LitElement {
         svg: Selection<SVGElement, unknown, null, undefined>,
         xScale: ScaleLinear<number, number, never>
     ) {
-        const blockG = svg
-            .append("g")
-            .attr(
-                "transform",
-                `translate(${SVG_PADDING}, ${
-                    this.svgHeight -
-                    SVG_PADDING -
-                    (xScale(this.boxSetting.width) - xScale(0))
-                })`
-            );
-
-        blockG
-            .append("rect")
-            .attr("width", xScale(this.boxSetting.width) - xScale(0))
-            .attr("height", xScale(this.boxSetting.width) - xScale(0))
-            .attr("x", 0)
-            .attr("fill", "red");
-
-        blockG
-            .append("rect")
-            .attr("width", xScale(this.boxSetting.width) - xScale(0))
-            .attr("height", xScale(this.boxSetting.width) - xScale(0))
-            .attr("x", xScale(this.boxSetting.distance * 2))
-            .attr("fill", "blue");
+        const info = getInfoOnCollision(this.leftBox, this.rightBox);
+        this._updateText(svg, xScale, info);
+        if (this.runSimulation) {
+            this._updateBoxPositions(svg, xScale, info);
+        } else {
+            this._updateBoxPositions(svg, xScale, info);
+        }
     }
 
     render() {
@@ -113,6 +130,178 @@ export class DisplaySvg extends LitElement {
     _handleResize = () => {
         this.svgWidth = this.svg.clientWidth;
         this.svgHeight = this.svg.clientHeight;
+    };
+
+    _updateText = (
+        svg: Selection<SVGElement, unknown, null, undefined>,
+        xScale: ScaleLinear<number, number, never>,
+        infoOnCollision: InfoCollision
+    ) => {
+        svg.selectAll(".g-text").remove();
+        const totalDistance = this.leftBox.distance + this.rightBox.distance;
+
+        const textLeftG = svg
+            .append("g")
+            .attr("class", "g-text")
+            .attr(
+                "transform",
+                `translate(${SVG_PADDING}, ${
+                    SVG_PADDING + this.svgHeight / 10
+                })`
+            );
+
+        textLeftG
+            .append("text")
+            .text(`Velocity_i: ${this.leftBox.speed} (m/s)`)
+            .attr("font-size", "1.5rem")
+            .attr("x", 0)
+            .attr("y", 0);
+        textLeftG
+            .append("text")
+            .text(`Velocity_f: ${infoOnCollision.velocity.left} (m/s)`)
+            .attr("font-size", "1.5rem")
+            .attr("x", 0)
+            .attr("y", 40);
+
+        const textRightG = svg
+            .append("g")
+            .attr("class", "g-text")
+            .attr(
+                "transform",
+                `translate(${SVG_PADDING + xScale(totalDistance)}, ${
+                    SVG_PADDING + this.svgHeight / 10
+                })`
+            );
+
+        textRightG
+            .append("text")
+            .text(`Velocity_i: ${-this.rightBox.speed} (m/s)`)
+            .attr("text-anchor", "end")
+            .attr("font-size", "1.5rem")
+            .attr("x", 0)
+            .attr("y", 0);
+
+        textRightG
+            .append("text")
+            .text(`Velocity_f: ${infoOnCollision.velocity.right} (m/s)`)
+            .attr("text-anchor", "end")
+            .attr("font-size", "1.5rem")
+            .attr("x", 0)
+            .attr("y", 30);
+    };
+
+    _updateBoxPositions = (
+        svg: Selection<SVGElement, unknown, null, undefined>,
+        xScale: ScaleLinear<number, number, never>,
+        infoOnCollision: InfoCollision
+    ) => {
+        svg.selectAll(".g-block").remove();
+
+        const totalDistance = this.leftBox.distance + this.rightBox.distance;
+
+        const blockLeftG = svg
+            .append("g")
+            .attr("class", "g-block")
+            .attr(
+                "transform",
+                `translate(${SVG_PADDING}, ${
+                    this.svgHeight -
+                    SVG_PADDING -
+                    (xScale(this.leftBox.width) - xScale(0))
+                })`
+            );
+
+        blockLeftG
+            .append("rect")
+            .attr("width", xScale(this.leftBox.width) - xScale(0))
+            .attr("height", xScale(this.leftBox.width) - xScale(0))
+            .attr("x", 0)
+            .attr("fill", "red");
+
+        const blockRightG = svg
+            .append("g")
+            .attr("class", "g-block")
+            .attr(
+                "transform",
+                `translate(${SVG_PADDING + xScale(totalDistance)}, ${
+                    this.svgHeight -
+                    SVG_PADDING -
+                    (xScale(this.rightBox.width) - xScale(0))
+                })`
+            );
+
+        blockRightG
+            .append("rect")
+            .attr("width", xScale(this.rightBox.width) - xScale(0))
+            .attr("height", xScale(this.rightBox.width) - xScale(0))
+            .attr("x", 0)
+            .attr("fill", "blue");
+
+        if (this.runSimulation) {
+            const collisionMilliSec = infoOnCollision.time * 1000;
+            const xLeftAfter =
+                this.leftBox.distance +
+                infoOnCollision.velocity.left * infoOnCollision.time;
+            const xRightAfter =
+                this.leftBox.distance +
+                infoOnCollision.velocity.right * infoOnCollision.time;
+
+            setTimeout(() => {
+                this.runSimulation = false;
+            }, collisionMilliSec * 2);
+
+            blockLeftG
+                .transition()
+                .ease(easeLinear)
+                .duration(collisionMilliSec)
+                .attr(
+                    "transform",
+                    `translate(${
+                        SVG_PADDING + xScale(infoOnCollision.x) - xScale(0)
+                    }, ${
+                        this.svgHeight -
+                        SVG_PADDING -
+                        (xScale(this.leftBox.width) - xScale(0))
+                    })`
+                )
+                .transition()
+                .ease(easeLinear)
+                .duration(collisionMilliSec)
+                .attr(
+                    "transform",
+                    `translate(${
+                        SVG_PADDING + xScale(xLeftAfter) - xScale(0)
+                    }, ${
+                        this.svgHeight -
+                        SVG_PADDING -
+                        (xScale(this.leftBox.width) - xScale(0))
+                    })`
+                );
+
+            blockRightG
+                .transition()
+                .ease(easeLinear)
+                .duration(collisionMilliSec)
+                .attr(
+                    "transform",
+                    `translate(${SVG_PADDING + xScale(infoOnCollision.x)}, ${
+                        this.svgHeight -
+                        SVG_PADDING -
+                        (xScale(this.rightBox.width) - xScale(0))
+                    })`
+                )
+                .transition()
+                .ease(easeLinear)
+                .duration(collisionMilliSec)
+                .attr(
+                    "transform",
+                    `translate(${SVG_PADDING + xScale(xRightAfter)}, ${
+                        this.svgHeight -
+                        SVG_PADDING -
+                        (xScale(this.leftBox.width) - xScale(0))
+                    })`
+                );
+        }
     };
 
     static styles = css`
