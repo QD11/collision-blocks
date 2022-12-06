@@ -97,11 +97,12 @@ export class DisplaySvg extends LitElement {
         xScale: ScaleLinear<number, number, never>
     ) {
         const info = getInfoOnCollision(this.leftBox, this.rightBox);
-        this._updateText(svg, xScale, info);
         if (this.runSimulation) {
             this._updateBoxPositions(svg, xScale, info);
+            this._updateText(svg, xScale, info);
         } else {
             this._updateBoxPositions(svg, xScale, info);
+            this._updateText(svg, xScale, info);
         }
     }
 
@@ -188,6 +189,38 @@ export class DisplaySvg extends LitElement {
             .attr("font-size", "1.5rem")
             .attr("x", 0)
             .attr("y", 30);
+
+        const textMiddleG = svg
+            .append("g")
+            .attr("class", "g-text")
+            .attr(
+                "transform",
+                `translate(${
+                    SVG_PADDING +
+                    xScale(
+                        (totalDistance -
+                            this.leftBox.width +
+                            this.rightBox.width) /
+                            2
+                    )
+                }, ${SVG_PADDING + this.svgHeight / 10})`
+            );
+
+        textMiddleG
+            .append("text")
+            .text(`time_collision: ${infoOnCollision.time} (s)`)
+            .attr("text-anchor", "middle")
+            .attr("font-size", "1.5rem")
+            .attr("x", 0)
+            .attr("y", 0);
+
+        textMiddleG
+            .append("text")
+            .text(`x_collision: ${infoOnCollision.x} (m)`)
+            .attr("text-anchor", "middle")
+            .attr("font-size", "1.5rem")
+            .attr("x", 0)
+            .attr("y", 40);
     };
 
     _updateBoxPositions = (
@@ -240,10 +273,10 @@ export class DisplaySvg extends LitElement {
         if (this.runSimulation) {
             const collisionMilliSec = infoOnCollision.time * 1000;
             const xLeftAfter =
-                this.leftBox.distance +
+                infoOnCollision.x +
                 infoOnCollision.velocity.left * infoOnCollision.time;
             const xRightAfter =
-                this.leftBox.distance +
+                infoOnCollision.x +
                 infoOnCollision.velocity.right * infoOnCollision.time;
 
             setTimeout(() => {

@@ -7,7 +7,7 @@ export const defaultEnvSettings = {
 export const defaultBoxSetting: BoxSetting = {
     speed: 10,
     mass: 1,
-    distance: 100,
+    distance: 50,
     width: 5,
 };
 
