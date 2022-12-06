@@ -1,10 +1,10 @@
-import { BoxProperty } from "features/interfaces";
+import { BoxProperty, BoxSetting, InfoCollision } from "features/interfaces";
 
 export const defaultEnvSettings = {
     distance: 20,
 };
 
-export const defaultBoxSetting = {
+export const defaultBoxSetting: BoxSetting = {
     speed: 10,
     mass: 1,
     distance: 100,
@@ -38,3 +38,14 @@ export const BOX_PROPERTIES: BoxProperty[] = [
 export const SVG_PADDING = 20;
 
 export const BOX_HEIGHT = 20;
+
+export const DEFAULT_TIME_STEP = 500; //500 milliseconds = 0.5seconds
+
+export const DEFAULT_STATS: InfoCollision = {
+    time: 10,
+    x: 10,
+    velocity: {
+        left: 10,
+        right: 10,
+    },
+};

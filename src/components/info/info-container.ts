@@ -1,4 +1,8 @@
-import { defaultBoxSetting, defaultEnvSettings } from "features/constants";
+import {
+    defaultBoxSetting,
+    defaultEnvSettings,
+    DEFAULT_STATS,
+} from "features/constants";
 import { css, html, LitElement, PropertyValues } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import "./box-settings-container";
@@ -6,21 +10,35 @@ import "./system-settings-container";
 
 @customElement("info-container")
 export class InfoContainer extends LitElement {
-    @property()
-    count = 0;
-
     @property({ type: Object })
     envSettings = defaultEnvSettings;
 
     @property()
-    boxSetting = defaultBoxSetting;
+    runSimulation = false;
+
+    @property()
+    leftBox = defaultBoxSetting;
+
+    @property()
+    rightBox = defaultBoxSetting;
+
+    @property()
+    stats = DEFAULT_STATS;
 
     updateEnvSettings(e: CustomEvent) {
         this.envSettings = e.detail;
     }
 
-    updateBoxSetting(e: CustomEvent) {
-        this.boxSetting = e.detail;
+    updateLeftBox(e: CustomEvent) {
+        this.leftBox = e.detail;
+    }
+
+    updateRightBox(e: CustomEvent) {
+        this.rightBox = e.detail;
+    }
+
+    updateRunSimulation(e: CustomEvent) {
+        this.runSimulation = e.detail;
     }
 
     willUpdate(changedProperties: PropertyValues<this>) {
@@ -31,10 +49,24 @@ export class InfoContainer extends LitElement {
             });
             this.dispatchEvent(event);
         }
-        if (changedProperties.has("boxSetting")) {
-            const event = new CustomEvent("new-boxSetting", {
+        if (changedProperties.has("leftBox")) {
+            const event = new CustomEvent("new-leftBox", {
                 bubbles: true,
-                detail: this.boxSetting,
+                detail: this.leftBox,
+            });
+            this.dispatchEvent(event);
+        }
+        if (changedProperties.has("rightBox")) {
+            const event = new CustomEvent("new-rightBox", {
+                bubbles: true,
+                detail: this.rightBox,
+            });
+            this.dispatchEvent(event);
+        }
+        if (changedProperties.has("runSimulation")) {
+            const event = new CustomEvent("new-runSimulation", {
+                bubbles: true,
+                detail: this.runSimulation,
             });
             this.dispatchEvent(event);
         }
@@ -42,15 +74,21 @@ export class InfoContainer extends LitElement {
 
     render() {
         return html`
-            <p>${this.envSettings.distance}</p>
             <div class="container">
                 <system-settings-container
                     @new-envSettings=${this.updateEnvSettings}
+                    .leftBox=${this.leftBox}
+                    .rightBox=${this.rightBox}
                     .envSettings=${this.envSettings}
+                    .stats=${this.stats}
+                    .runSimulation=${this.runSimulation}
+                    @new-runSimulation=${this.updateRunSimulation}
                 ></system-settings-container>
                 <box-settings-container
-                    @new-boxSetting=${this.updateBoxSetting}
-                    .boxSetting=${this.boxSetting}
+                    @new-leftBox=${this.updateLeftBox}
+                    @new-rightBox=${this.updateRightBox}
+                    .leftBox=${this.leftBox}
+                    .rightBox=${this.rightBox}
                 ></box-settings-container>
             </div>
         `;
@@ -65,6 +103,7 @@ export class InfoContainer extends LitElement {
             display: flex;
             flex-direction: row;
             height: 100%;
+            gap: 1rem;
         }
     `;
 }

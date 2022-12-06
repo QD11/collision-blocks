@@ -1,4 +1,8 @@
-import { defaultEnvSettings } from "features/constants";
+import {
+    defaultBoxSetting,
+    defaultEnvSettings,
+    DEFAULT_STATS,
+} from "features/constants";
 import { css, html, LitElement, PropertyValues } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
@@ -10,11 +14,30 @@ export class SystemSettingsContainer extends LitElement {
     @property()
     envSettings = defaultEnvSettings;
 
+    @property()
+    runSimulation = false;
+
+    @property()
+    stats = DEFAULT_STATS;
+
+    @property()
+    leftBox = defaultBoxSetting;
+
+    @property()
+    rightBox = defaultBoxSetting;
+
     willUpdate(changedProperties: PropertyValues<this>) {
         if (changedProperties.has("envSettings")) {
             const event = new CustomEvent("new-envSettings", {
                 bubbles: true,
                 detail: this.envSettings,
+            });
+            this.dispatchEvent(event);
+        }
+        if (changedProperties.has("runSimulation")) {
+            const event = new CustomEvent("new-runSimulation", {
+                bubbles: true,
+                detail: this.runSimulation,
             });
             this.dispatchEvent(event);
         }
@@ -30,22 +53,22 @@ export class SystemSettingsContainer extends LitElement {
 
     render() {
         return html`
-            <div class="container">
-                <h2 class="title">System Settings</h2>
-                <div class="controls">
-                    <div class="control">
-                        <label class="label">Distance</label>
-                        <input
-                            type="range"
-                            class="modifier"
-                            name="distance"
-                            min="20"
-                            max="100"
-                            value=${this.envSettings.distance}
-                            @input=${this.dispatchInput}
-                        />
-                        <output>${this.envSettings.distance}m</output>
-                    </div>
+            <div class="which-box-container">
+                <div
+                    class=${this.runSimulation
+                        ? "box-holder-active"
+                        : "box-holder-inactive"}
+                    @click=${() => (this.runSimulation = true)}
+                >
+                    <h2 class="box-name">Start</h2>
+                </div>
+                <div
+                    class=${!this.runSimulation
+                        ? "box-holder-active"
+                        : "box-holder-inactive"}
+                    @click=${() => (this.runSimulation = false)}
+                >
+                    <h2 class="box-name">Stop</h2>
                 </div>
             </div>
         `;
@@ -55,26 +78,60 @@ export class SystemSettingsContainer extends LitElement {
         :host {
             padding: 1rem;
             width: 50%;
-        }
-        .container {
-            height: 100%;
+            height: 50vh;
             border: 1px solid black;
         }
-        .title {
-            margin-top: 1rem;
-            margin-bottom: 1rem;
-        }
-        .controls {
-            padding: 1rem;
-        }
-        .control {
+        .bottom-container {
+            height: 100%;
             display: flex;
+            justify-content: space-between;
+            gap: 1rem;
         }
-        .label {
-            flex: 1;
+        .stats-container {
+            width: 50%;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
         }
-        .modifier {
-            flex: 3;
+        .controllerContainer {
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+        .boxController {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .which-box-container {
+            display: flex;
+            height: 100%;
+            justify-content: space-around;
+            gap: 1rem;
+        }
+        .box-holder-active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 50%;
+            border: 1px solid black;
+            background: #e5e5e5;
+            outline: none;
+            -webkit-box-shadow: inset 0px 0px 5px #c1c1c1;
+            -moz-box-shadow: inset 0px 0px 5px #c1c1c1;
+            box-shadow: inset 0px 0px 5px #c1c1c1;
+        }
+        .box-holder-inactive {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 50%;
+            border: 1px solid black;
+            background: grey;
+            cursor: pointer;
+        }
+        .box-name {
+            margin: 0;
+            padding: 1rem;
         }
     `;
 }

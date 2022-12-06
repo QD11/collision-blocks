@@ -2,7 +2,11 @@ import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import "./components/canvas/display-svg";
 import "./components/info/info-container";
-import { defaultBoxSetting, defaultEnvSettings } from "./features/constants";
+import {
+    defaultBoxSetting,
+    defaultEnvSettings,
+    DEFAULT_STATS,
+} from "./features/constants";
 
 /**
  * An example element.
@@ -18,39 +22,65 @@ export class MyElement extends LitElement {
     @property()
     docsHint = "Click on the Vite and Lit logos to learn more";
 
-    /**
-     * The number of times the button has been clicked.
-     */
-    @property()
-    count = 5;
-
     @property()
     envSettings = defaultEnvSettings;
 
     @property()
-    boxSetting = defaultBoxSetting;
+    runSimulation = false;
+
+    @property()
+    stats = DEFAULT_STATS;
+
+    @property()
+    leftBox = defaultBoxSetting;
+
+    @property()
+    rightBox = defaultBoxSetting;
 
     updateEnvSettings(e: CustomEvent) {
         this.envSettings = e.detail;
     }
 
-    updateBoxSetting(e: CustomEvent) {
-        this.boxSetting = e.detail;
+    updateLeftBox(e: CustomEvent) {
+        this.leftBox = e.detail;
+    }
+
+    updateRightBox(e: CustomEvent) {
+        this.rightBox = e.detail;
+    }
+
+    updateRunSimulation(e: CustomEvent) {
+        this.runSimulation = e.detail;
+    }
+
+    updateStats(e: CustomEvent) {
+        this.stats = e.detail;
     }
 
     render() {
+        console.log(this.runSimulation);
+
         return html`
             <div class="container">
                 <h2>Physics Blocks</h2>
                 <display-svg
                     .envSettings=${this.envSettings}
-                    .boxSetting=${this.boxSetting}
+                    .leftBox=${this.leftBox}
+                    .rightBox=${this.rightBox}
+                    .runSimulation=${this.runSimulation}
+                    @new-runSimulation=${this.updateRunSimulation}
+                    @new-stats=${this.updateStats}
                 ></display-svg>
                 <info-container
-                    .count=${this.count}
+                    .runSimulation=${this.runSimulation}
+                    .stats=${this.stats}
                     .envSettings=${this.envSettings}
+                    .leftBox=${this.leftBox}
+                    .rightBox=${this.rightBox}
+                    @new-runSimulation=${this.updateRunSimulation}
                     @new-envSettings=${this.updateEnvSettings}
-                    @new-boxSetting=${this.updateBoxSetting}
+                    @new-leftBox=${this.updateLeftBox}
+                    @new-rightBox=${this.updateRightBox}
                 ></info-container>
             </div>
         `;
@@ -68,6 +98,7 @@ export class MyElement extends LitElement {
             flex-direction: column;
             padding: 2rem;
             width: 100%;
+            gap: 1rem;
         }
     `;
 }
