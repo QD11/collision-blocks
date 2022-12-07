@@ -10,3 +10,8 @@ This app demonstrates the elastic collision between two objects. Users can chang
 * [Typescript](https://www.typescriptlang.org/): Adds typing to Javascript
 * [D3](https://d3js.org/): A library to create SVG animation
 
+## How to Run It
+1. Clone it
+2. cd to the root directory of this repo
+3. run "npm install"
+4. run "npm run dev"
