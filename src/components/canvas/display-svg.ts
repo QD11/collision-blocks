@@ -2,7 +2,6 @@ import { axisBottom, easeLinear, ScaleLinear, select, Selection } from "d3";
 import { scaleLinear } from "d3-scale";
 import {
     defaultBoxSetting,
-    defaultEnvSettings,
     DEFAULT_STATS,
     SVG_PADDING,
 } from "features/constants";
@@ -15,9 +14,6 @@ import { customElement, property, query, state } from "lit/decorators.js";
 export class DisplaySvg extends LitElement {
     @query("#svg")
     svg!: SVGElement;
-
-    @property()
-    envSettings = defaultEnvSettings;
 
     @property()
     leftBox = defaultBoxSetting;
