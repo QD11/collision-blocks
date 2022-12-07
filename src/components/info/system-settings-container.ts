@@ -1,24 +1,11 @@
-import {
-    defaultBoxSetting,
-    defaultEnvSettings,
-    DEFAULT_STATS,
-} from "features/constants";
+import { defaultBoxSetting } from "features/constants";
 import { css, html, LitElement, PropertyValues } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
 @customElement("system-settings-container")
 export class SystemSettingsContainer extends LitElement {
     @property()
-    distance = 20;
-
-    @property()
-    envSettings = defaultEnvSettings;
-
-    @property()
     runSimulation = false;
-
-    @property()
-    stats = DEFAULT_STATS;
 
     @property()
     leftBox = defaultBoxSetting;
@@ -27,13 +14,6 @@ export class SystemSettingsContainer extends LitElement {
     rightBox = defaultBoxSetting;
 
     willUpdate(changedProperties: PropertyValues<this>) {
-        if (changedProperties.has("envSettings")) {
-            const event = new CustomEvent("new-envSettings", {
-                bubbles: true,
-                detail: this.envSettings,
-            });
-            this.dispatchEvent(event);
-        }
         if (changedProperties.has("runSimulation")) {
             const event = new CustomEvent("new-runSimulation", {
                 bubbles: true,
@@ -41,14 +21,6 @@ export class SystemSettingsContainer extends LitElement {
             });
             this.dispatchEvent(event);
         }
-    }
-
-    dispatchInput(e: CustomEvent) {
-        const target = e.target as HTMLInputElement;
-        this.envSettings = {
-            ...this.envSettings,
-            [target.name]: target.value,
-        };
     }
 
     render() {
