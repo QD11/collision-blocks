@@ -2,7 +2,7 @@
 
 This app demonstrates the elastic collision between two objects. Users can change the boxes' properties and click start to see the animation.
 
-![Take2](https://user-images.githubusercontent.com/88467268/206062677-326321eb-3705-47a9-b626-77b11323dd06.gif)
+![example](https://user-images.githubusercontent.com/88467268/206062771-082055b4-0921-46ad-b9b5-1469f088ebbf.gif)
 
 ## Technologies
 ### Front-End
