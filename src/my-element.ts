@@ -30,7 +30,7 @@ export class MyElement extends LitElement {
     render() {
         return html`
             <div class="container">
-                <h2>Physics Blocks</h2>
+                <h2>Collision Blocks</h2>
                 <display-svg
                     .leftBox=${this.leftBox}
                     .rightBox=${this.rightBox}
