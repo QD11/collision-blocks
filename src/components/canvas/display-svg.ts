@@ -56,9 +56,7 @@ export class DisplaySvg extends LitElement {
         }
     }
 
-    protected updated(
-        changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
-    ) {
+    protected updated() {
         const shadowRoot = this.shadowRoot;
         if (!shadowRoot) {
             return;
@@ -153,13 +151,15 @@ export class DisplaySvg extends LitElement {
 
         textLeftG
             .append("text")
-            .text(`Velocity_i: ${this.leftBox.speed} (m/s)`)
+            .text(`Velocity_i: ${this.leftBox.speed.toFixed(2)} (m/s)`)
             .attr("font-size", "1.5rem")
             .attr("x", 0)
             .attr("y", 0);
         textLeftG
             .append("text")
-            .text(`Velocity_f: ${infoOnCollision.velocity.left} (m/s)`)
+            .text(
+                `Velocity_f: ${infoOnCollision.velocity.left.toFixed(2)} (m/s)`
+            )
             .attr("font-size", "1.5rem")
             .attr("x", 0)
             .attr("y", 40);
@@ -176,7 +176,7 @@ export class DisplaySvg extends LitElement {
 
         textRightG
             .append("text")
-            .text(`Velocity_i: ${-this.rightBox.speed} (m/s)`)
+            .text(`Velocity_i: ${-this.rightBox.speed.toFixed(2)} (m/s)`)
             .attr("text-anchor", "end")
             .attr("font-size", "1.5rem")
             .attr("x", 0)
@@ -184,7 +184,9 @@ export class DisplaySvg extends LitElement {
 
         textRightG
             .append("text")
-            .text(`Velocity_f: ${infoOnCollision.velocity.right} (m/s)`)
+            .text(
+                `Velocity_f: ${infoOnCollision.velocity.right.toFixed(2)} (m/s)`
+            )
             .attr("text-anchor", "end")
             .attr("font-size", "1.5rem")
             .attr("x", 0)
@@ -331,7 +333,7 @@ export class DisplaySvg extends LitElement {
                     `translate(${SVG_PADDING + xScale(xRightAfter)}, ${
                         this.svgHeight -
                         SVG_PADDING -
-                        (xScale(this.leftBox.width) - xScale(0))
+                        (xScale(this.rightBox.width) - xScale(0))
                     })`
                 );
         }

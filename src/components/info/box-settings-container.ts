@@ -6,9 +6,6 @@ import { customElement, property, state } from "lit/decorators.js";
 @customElement("box-settings-container")
 export class BoxSettingsContainer extends LitElement {
     @property()
-    count = 0;
-
-    @property()
     leftBox = defaultBoxSetting;
 
     @property()
