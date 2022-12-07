@@ -91,13 +91,8 @@ export class DisplaySvg extends LitElement {
         xScale: ScaleLinear<number, number, never>
     ) {
         const info = getInfoOnCollision(this.leftBox, this.rightBox);
-        if (this.runSimulation) {
-            this._updateBoxPositions(svg, xScale, info);
-            this._updateText(svg, xScale, info);
-        } else {
-            this._updateBoxPositions(svg, xScale, info);
-            this._updateText(svg, xScale, info);
-        }
+        this._updateBoxPositions(svg, xScale, info);
+        this._updateText(svg, xScale, info);
     }
 
     render() {
